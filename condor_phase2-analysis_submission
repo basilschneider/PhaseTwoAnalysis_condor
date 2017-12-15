@@ -1,0 +1,54 @@
+universe = vanilla
+Executable = condor_phase2-analysis
+Requirements = OpSys == "LINUX" && (Arch != "DUMMY" )
+request_disk = 10000000
+request_memory = 3000
+Transfer_Input_Files = condor_phase2-analysis, tarball_phase2-analysis.tar.gz
+notification = Never
+Should_Transfer_Files = YES
+WhenToTransferOutput = ON_EXIT
+Transfer_Output_Files = condor_output_dummy
+x509userproxy = $ENV(X509_USER_PROXY)
+Output = logs/condor_$(Cluster).$(Process).stdout
+Error = logs/condor_$(Cluster).$(Process).stderr
+Log = logs/condor_$(Cluster).$(Process).condor
+Arguments = 56 $(Cluster) $(Process)
+Queue 1
+Arguments = 57 $(Cluster) $(Process)
+Queue 1
+Arguments = 58 $(Cluster) $(Process)
+Queue 1
+Arguments = 59 $(Cluster) $(Process)
+Queue 1
+Arguments = 60 $(Cluster) $(Process)
+Queue 1
+Arguments = 61 $(Cluster) $(Process)
+Queue 1
+Arguments = 62 $(Cluster) $(Process)
+Queue 1
+Arguments = 63 $(Cluster) $(Process)
+Queue 1
+Arguments = 64 $(Cluster) $(Process)
+Queue 1
+Arguments = 65 $(Cluster) $(Process)
+Queue 1
+Arguments = 66 $(Cluster) $(Process)
+Queue 1
+Arguments = 67 $(Cluster) $(Process)
+Queue 1
+Arguments = 68 $(Cluster) $(Process)
+Queue 1
+Arguments = 69 $(Cluster) $(Process)
+Queue 1
+Arguments = 70 $(Cluster) $(Process)
+Queue 1
+Arguments = 71 $(Cluster) $(Process)
+Queue 1
+Arguments = 72 $(Cluster) $(Process)
+Queue 1
+Arguments = 73 $(Cluster) $(Process)
+Queue 1
+Arguments = 74 $(Cluster) $(Process)
+Queue 1
+Arguments = 75 $(Cluster) $(Process)
+Queue 1

@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+# Condor submission script to produce Phase-2 ntuples
+
+set -e -o pipefail
+
+# Get positional arguments
+cmssw=CMSSW_9_3_2
+nSample="${1}"
+cluster="${2}"
+process="${3}"
+outdir=phase-2_tuples/c"${cluster}"/p"$(printf "%05d\n" "${process}")"
+eosoutdir=/eos/uscms/store/user/bschneid/analysis/upgrade/"${outdir}"
+
+pwd="${PWD}"
+
+echo Hello Condor
+echo
+
+echo "Date: $(date)"
+echo "Worker node: $(uname -a)"
+echo "Operating system: $(cat /etc/redhat-release)"
+echo "CMSSW release: ${cmssw}"
+echo "nSample: ${nSample}"
+echo "Working directory: ${pwd}"
+echo "Output directory: ${outdir}"
+echo "EOS output directory: ${eosoutdir}"
+echo "Cluster number: ${cluster}"
+echo "Process number: ${process}"
+echo
+
+# Create output dummy file that can be transferred back
+# HTCondor has a bug, it always needs to transfer at least one file back
+# This can cause it to overwrite stuff, so we just create a dummy file, that
+# happily can be transferred and overwritten
+touch condor_output_dummy
+
+## Set up CMSSW release
+#echo Set up CMSSW release
+#. /cvmfs/cms.cern.ch/cmsset_default.sh
+#export SCRAM_ARCH=slc6_amd64_gcc630
+#eval $(scramv1 project CMSSW "${cmssw}")
+
+echo Unpack tarball
+tar xf tarball_phase2-analysis.tar.gz
+
+cd "${cmssw}"/src
+scram b ProjectRename
+eval $(scram runtime -sh)
+
+# Run
+cd PhaseTwoAnalysis/NTupler
+# Remove # in given line (to uncomment)
+sed -i "${nSample}s/#//" scripts/produceNtuples_old_cfg.py
+sed -i "s/MiniEvents/MiniEvents_${nSample}/g" compile
+./compile
+
+# Copy output rootfiles to eos
+echo Copy output to eos.
+xrdfs root://cmseos.fnal.gov/ mkdir -p "${eosoutdir}"
+#for rootfile in *.root; do
+for rootfile in *.root; do
+    echo Copy rootfile "${rootfile}".
+    # Since copying to eos often fails for no obvious reason, brute force the copy
+    for i in {1..10}; do
+        xrdcp -fs "${rootfile}" root://cmseos.fnal.gov/"${eosoutdir}" \
+            && break \
+            || echo xrdcp try "${i}" for file "${rootfile}" failed.
+    done
+done
+
+echo Bye.
